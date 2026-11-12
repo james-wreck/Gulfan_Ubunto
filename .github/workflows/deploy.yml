@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # This workflow will build and push a new container image to Amazon ECR,
 # and then will deploy a new task definition to Amazon ECS, when there is a push to the "main" branch.
 #
@@ -25,11 +26,16 @@
 #    and best practices on handling the access key credentials.
 
 name: Deploy to Amazon ECS
+=======
+
+name: Deploy Flutter Web to AWS Lightsail
+>>>>>>> 309c3a0 (added: workflow yml file)
 
 on:
   push:
     branches: [ "main" ]
 
+<<<<<<< HEAD
 env:
   AWS_REGION: MY_AWS_REGION                   # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
@@ -40,11 +46,14 @@ env:
   CONTAINER_NAME: MY_CONTAINER_NAME           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
 
+=======
+>>>>>>> 309c3a0 (added: workflow yml file)
 permissions:
   contents: read
 
 jobs:
   deploy:
+<<<<<<< HEAD
     name: Deploy
     runs-on: ubuntu-latest
     environment: production
@@ -92,3 +101,66 @@ jobs:
         service: ${{ env.ECS_SERVICE }}
         cluster: ${{ env.ECS_CLUSTER }}
         wait-for-service-stability: true
+=======
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        working-directory: my_first_flutter_app
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        working-directory: my_first_flutter_app
+        run: flutter build web --release
+
+      - name: Prepare SSH connection
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USERNAME: ${{ secrets.LIGHTSAIL_USERNAME }}
+          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail_key
+          chmod 600 ~/.ssh/lightsail_key
+          ssh-keyscan -H "$LIGHTSAIL_HOST" >> ~/.ssh/known_hosts
+
+      - name: Prepare server directory
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USERNAME: ${{ secrets.LIGHTSAIL_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/lightsail_key \
+            "$LIGHTSAIL_USERNAME@$LIGHTSAIL_HOST" \
+            "sudo mkdir -p /var/www/flutter_app &&
+             sudo chown -R $LIGHTSAIL_USERNAME:$LIGHTSAIL_USERNAME /var/www/flutter_app"
+
+      - name: Upload Flutter Web files
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USERNAME: ${{ secrets.LIGHTSAIL_USERNAME }}
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/lightsail_key" \
+            my_first_flutter_app/build/web/ \
+            "$LIGHTSAIL_USERNAME@$LIGHTSAIL_HOST:/var/www/flutter_app/"
+
+      - name: Reload Nginx
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USERNAME: ${{ secrets.LIGHTSAIL_USERNAME }}
+        run: |
+          ssh -i ~/.ssh/lightsail_key \
+            "$LIGHTSAIL_USERNAME@$LIGHTSAIL_HOST" \
+            "sudo chown -R www-data:www-data /var/www/flutter_app &&
+             sudo nginx -t &&
+             sudo systemctl reload nginx"
+>>>>>>> 309c3a0 (added: workflow yml file)
