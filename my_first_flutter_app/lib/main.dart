@@ -35,7 +35,7 @@ List<Map<String, dynamic>> profiles = [
   },
   {
     'image': 'assets/brian.jfif',
-    'name': "Brian May",
+    'name': "Brian Gawgaw",
     'courseSection': "BSIT - 3",
     'age': null,
     'hobby': "Sleeping",
