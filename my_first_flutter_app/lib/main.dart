@@ -9,7 +9,7 @@ void main() {
 List<Map<String, dynamic>> profiles = [
   {
     'image': 'assets/da.jfif',
-    'name': "James Laurence C. Gulfan",
+    'name': "James  C. Gulfan",
     'courseSection': "BSIT - 3",
     'age': 19,
     'hobby': "Basketball",
